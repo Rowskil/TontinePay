@@ -14,7 +14,7 @@
 .externalNativeBuild
 .cxx
 .env
-debug.keystore
+!debug.keystore
 
 # Ensure Gradle wrapper executable and jar are committed
 !gradle/wrapper/gradle-wrapper.jar
