@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "User": {
+      "path": "users/{userId}",
+      "fields": {
+        "id": { "type": "string" },
+        "fullName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "password": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "Tontine": {
+      "path": "tontines/{tontineId}",
+      "fields": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "creatorId": { "type": "string" },
+        "contributionAmount": { "type": "number" },
+        "frequency": { "type": "string" },
+        "currency": { "type": "string" },
+        "inviteCode": { "type": "string" },
+        "totalMembers": { "type": "number" },
+        "isBeneficiaryExempt": { "type": "boolean" },
+        "latePenaltyFee": { "type": "number" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "TontineMember": {
+      "path": "tontines/{tontineId}/members/{memberId}",
+      "fields": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "tontineId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "role": { "type": "string" },
+        "payoutOrder": { "type": "number" }
+      }
+    },
+    "TontineCycle": {
+      "path": "tontines/{tontineId}/cycles/{cycleId}",
+      "fields": {
+        "id": { "type": "string" },
+        "tontineId": { "type": "string" },
+        "cycleNumber": { "type": "number" },
+        "beneficiaryId": { "type": "string" },
+        "beneficiaryName": { "type": "string" },
+        "beneficiaryPhone": { "type": "string" },
+        "potTarget": { "type": "number" },
+        "potCollected": { "type": "number" },
+        "status": { "type": "string" },
+        "startDate": { "type": "string" },
+        "deadlineDate": { "type": "string" }
+      }
+    },
+    "Transaction": {
+      "path": "transactions/{transactionId}",
+      "fields": {
+        "id": { "type": "string" },
+        "cycleId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "senderPhone": { "type": "string" },
+        "receiverId": { "type": "string" },
+        "receiverName": { "type": "string" },
+        "receiverPhone": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string" },
+        "transactionId": { "type": "string" },
+        "provider": { "type": "string" },
+        "timestamp": { "type": "string" }
+      }
+    }
+  }
+}

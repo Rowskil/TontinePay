@@ -1,0 +1,8 @@
+{
+  "firestore": [
+    {
+      "database": "ai-studio-android-tontinep-a33f464e-ffdf-4a50-ad0b-29089a35f3ff",
+      "rules": "firestore.rules"
+    }
+  ]
+}

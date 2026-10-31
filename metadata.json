@@ -1,0 +1,6 @@
+{
+  "name": "TontinePay",
+  "description": "Gestion autonome et transparente de tontines financières avec validation Mobile Money et OCR Gemini Vision",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
