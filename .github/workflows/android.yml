@@ -23,66 +23,28 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Prepare Keystore and Environment
         run: |
-          # 1. Restore debug.keystore with the official signing key
+          # 1. Restore debug.keystore if available from base64, otherwise generate with keytool
           if [ ! -f debug.keystore ]; then
             if [ -f debug.keystore.base64 ]; then
               echo "Restoring debug.keystore from debug.keystore.base64..."
               base64 -d debug.keystore.base64 > debug.keystore
             else
-              echo "Restoring debug.keystore from embedded keystore data..."
-              cat << 'EOF' | base64 -d > debug.keystore
-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
-EOF
+              echo "Generating standard debug.keystore with keytool..."
+              keytool -genkeypair -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
             fi
-          fi
-
-          # Safety fallback: ensure debug.keystore exists under any circumstance
-          if [ ! -f debug.keystore ]; then
-            echo "Generating fallback debug.keystore..."
-            keytool -genkeypair -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           fi
 
           # 2. Ensure app/google-services.json exists
           if [ ! -f app/google-services.json ]; then
-            echo "Generating app/google-services.json configuration..."
-            cat << 'EOF' > app/google-services.json
-{
-  "project_info": {
-    "project_number": "817956180582",
-    "project_id": "gen-lang-client-0307028175",
-    "storage_bucket": "gen-lang-client-0307028175.firebasestorage.app"
-  },
-  "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:817956180582:android:6170a0e64cf53acbb613a7",
-        "android_client_info": {
-          "package_name": "com.aistudio.tontinepay.rfqwxy"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBeLxke57idgPk7Byhrcd78ffpaPSTu7HY"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    }
-  ],
-  "configuration_version": "1"
-}
-EOF
+            echo "Generating fallback app/google-services.json..."
+            echo '{"project_info":{"project_number":"817956180582","project_id":"gen-lang-client-0307028175","storage_bucket":"gen-lang-client-0307028175.firebasestorage.app"},"client":[{"client_info":{"mobilesdk_app_id":"1:817956180582:android:6170a0e64cf53acbb613a7","android_client_info":{"package_name":"com.aistudio.tontinepay.rfqwxy"}},"oauth_client":[],"api_key":[{"current_key":"AIzaSyBeLxke57idgPk7Byhrcd78ffpaPSTu7HY"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > app/google-services.json
           fi
 
           # 3. Ensure .env is present for Secrets Gradle Plugin
