@@ -8,12 +8,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
     name: Build & Package APK
     runs-on: ubuntu-latest
+    env:
+      JAVA_OPTS: "-Djava.awt.headless=true"
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=\"-Xmx4g -Dfile.encoding=UTF-8 -Djava.awt.headless=true\""
 
     steps:
       - name: Checkout code
@@ -40,11 +43,36 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Debug APK with Gradle
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: ./gradlew assembleDebug --no-daemon -Djava.awt.headless=true --stacktrace
+
+      - name: Prepare APK Asset
+        run: |
+          mkdir -p release-assets
+          cp app/build/outputs/apk/debug/app-debug.apk release-assets/TontinePay-v1.6.0.apk
 
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: TontinePay-v1.6.0-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: release-assets/TontinePay-v1.6.0.apk
           if-no-files-found: error
+
+      - name: Publish GitHub Release (v1.6.0)
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.6.0
+          name: "TontinePay v1.6.0"
+          body: |
+            ### 🚀 TontinePay v1.6.0
+            - Nouveau logo officiel transparent et épuré
+            - Mode de tours automatiques configurables
+            - Fréquence quotidienne
+            - Calendrier de date planifiée intégré
+            - Micro-animations tactiles fluides
+            - Téléchargement direct de l'APK
+          files: release-assets/TontinePay-v1.6.0.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

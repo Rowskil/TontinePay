@@ -127,7 +127,7 @@ class TontineRepository(
             "latestVersion" to "v1.6.0",
             "versionCode" to 160,
             "releaseNotes" to "Version 1.6.0 : Nouveau logo officiel TP, tours automatiques, fréquence quotidienne, calendrier intégré et micro-animations tactiles.",
-            "downloadUrl" to "https://ais-pre-3k5lkqv7ovqerb6mqswtsl-961012230089.europe-west2.run.app",
+            "downloadUrl" to "https://github.com/Rowskil/TontinePay/releases/latest/download/TontinePay-v1.6.0.apk",
             "updatedAt" to System.currentTimeMillis()
         )
         fs.collection("system").document("app_update").set(updatePayload, SetOptions.merge())
@@ -156,7 +156,7 @@ class TontineRepository(
             }
             if (snapshot != null && snapshot.exists()) {
                 val ver = snapshot.getString("latestVersion") ?: "v1.6.0"
-                val url = snapshot.getString("downloadUrl") ?: "https://ais-pre-3k5lkqv7ovqerb6mqswtsl-961012230089.europe-west2.run.app"
+                val url = snapshot.getString("downloadUrl") ?: "https://github.com/Rowskil/TontinePay/releases/latest/download/TontinePay-v1.6.0.apk"
                 val notes = snapshot.getString("releaseNotes") ?: ""
                 _serverAppVersion.value = ver
                 _serverDownloadUrl.value = url
