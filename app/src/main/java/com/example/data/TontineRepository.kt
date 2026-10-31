@@ -132,6 +132,23 @@ class TontineRepository(
         )
         fs.collection("system").document("app_update").set(updatePayload, SetOptions.merge())
 
+        // Broadcast to general notifications collection so that all older versions (v1.2.5, v1.5.0) receive it
+        val updateNotifDoc = fs.collection("notifications").document("app_update_announcement_v1_6_0")
+        updateNotifDoc.get().addOnSuccessListener { docSnap ->
+            if (!docSnap.exists()) {
+                val notifData = hashMapOf<String, Any>(
+                    "userId" to "ALL",
+                    "tontineId" to "",
+                    "type" to "SYSTEM",
+                    "title" to "🚀 Mise à jour v1.6.0 disponible",
+                    "message" to "La nouvelle version v1.6.0 de TontinePay est disponible avec le logo officiel modernisé, les tours automatiques et des animations tactiles fluides !",
+                    "timestamp" to System.currentTimeMillis(),
+                    "isRead" to false
+                )
+                updateNotifDoc.set(notifData)
+            }
+        }
+
         fs.collection("system").document("app_update").addSnapshotListener { snapshot, error ->
             if (error != null) {
                 Log.w("TontineRepository", "app_update listener error", error)

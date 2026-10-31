@@ -155,11 +155,7 @@ private fun WelcomeSlidesView(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TontinePayLogo(
-                size = 36.dp,
-                iconSize = 22.dp,
-                cornerRadius = 10.dp
-            )
+            TontinePayLogo(size = 48.dp)
 
             TextButton(
                 onClick = onSkip,
@@ -386,11 +382,7 @@ private fun AuthChoiceView(
                 )
             }
 
-            TontinePayLogo(
-                size = 38.dp,
-                iconSize = 24.dp,
-                cornerRadius = 10.dp
-            )
+            TontinePayLogo(size = 48.dp)
 
             Spacer(modifier = Modifier.size(48.dp))
         }

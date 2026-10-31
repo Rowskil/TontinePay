@@ -67,11 +67,7 @@ fun TontineListScreen(
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        TontinePayLogo(
-                            size = 48.dp,
-                            iconSize = 42.dp,
-                            showContainer = true
-                        )
+                        TontinePayLogo(size = 48.dp)
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = "TontinePay",
@@ -143,32 +139,23 @@ fun TontineListScreen(
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(horizontal = 18.dp, vertical = 14.dp)
                     ) {
-                        TontinePayLogo(
-                            size = 52.dp,
-                            iconSize = 46.dp,
-                            showContainer = true
+                        Text(
+                            text = if (currentUser != null) "Bonjour, ${currentUser.fullName} 👋" else "Bienvenue 👋",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.width(14.dp))
-                        Column(modifier = Modifier.weight(1f)) {
+                        if (currentUser != null && currentUser.phoneNumber.isNotBlank()) {
                             Text(
-                                text = if (currentUser != null) "Bonjour, ${currentUser.fullName} 👋" else "Bienvenue 👋",
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold
+                                text = "Compte : ${currentUser.phoneNumber}",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
                             )
-                            if (currentUser != null && currentUser.phoneNumber.isNotBlank()) {
-                                Text(
-                                    text = "Compte : ${currentUser.phoneNumber}",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 12.sp
-                                )
-                            }
                         }
                     }
                 }
@@ -424,9 +411,7 @@ fun TontineListScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             TontinePayLogo(
-                                size = 88.dp,
-                                iconSize = 78.dp,
-                                cornerRadius = 22.dp
+                                size = 96.dp
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(

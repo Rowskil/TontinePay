@@ -476,31 +476,6 @@ fun ProfileSettingsScreen(
                             checked = notifyPayoutTurn,
                             onCheckedChange = { notifyPayoutTurn = it }
                         )
-
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
-                        )
-
-                        OutlinedButton(
-                            onClick = onTestNotification,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("test_notifications_button"),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.NotificationsActive,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                "Tester les notifications de l'application",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
                     }
                 }
             }

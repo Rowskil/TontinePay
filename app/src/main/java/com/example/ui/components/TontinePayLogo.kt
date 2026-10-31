@@ -21,12 +21,12 @@ import com.example.ui.theme.AccentTheme
 @Composable
 fun TontinePayLogo(
     modifier: Modifier = Modifier,
-    size: Dp = 44.dp,
+    size: Dp = 48.dp,
     iconSize: Dp? = null,
-    cornerRadius: Dp = (size * 0.24f),
+    cornerRadius: Dp = 0.dp,
     accentTheme: AccentTheme? = null,
     useAccentTheme: Boolean = true,
-    showContainer: Boolean = true,
+    showContainer: Boolean = false,
     containerColor: Color? = null,
     borderColor: Color? = null
 ) {
@@ -45,36 +45,12 @@ fun TontinePayLogo(
         R.drawable.logo_tontinepay
     }
 
-    val effectiveIconSize = iconSize ?: (size * 0.90f)
-
-    if (showContainer) {
-        val bg = containerColor ?: MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-        val border = borderColor ?: MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
-        Box(
-            modifier = modifier
-                .size(size)
-                .clip(RoundedCornerShape(cornerRadius))
-                .background(bg)
-                .border(1.dp, border, RoundedCornerShape(cornerRadius)),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = drawableRes),
-                contentDescription = "Logo TontinePay",
-                modifier = Modifier
-                    .size(effectiveIconSize)
-                    .clip(RoundedCornerShape(cornerRadius * 0.7f))
-            )
-        }
-    } else {
-        Image(
-            painter = painterResource(id = drawableRes),
-            contentDescription = "Logo TontinePay",
-            modifier = modifier
-                .size(size)
-                .clip(RoundedCornerShape(cornerRadius))
-        )
-    }
+    // Pure logo without enclosing square/card container for high visibility and uniformity
+    Image(
+        painter = painterResource(id = drawableRes),
+        contentDescription = "Logo TontinePay",
+        modifier = modifier.size(size)
+    )
 }
 
 private fun resolveAccentTheme(primaryColor: Color): AccentTheme? {

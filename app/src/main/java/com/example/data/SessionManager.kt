@@ -80,7 +80,8 @@ class SessionManager(context: Context) {
     }
 
     fun getAppliedVersion(): String {
-        return prefs.getString("applied_app_version", "v1.5.0") ?: "v1.5.0"
+        val defaultVer = "v${com.example.BuildConfig.VERSION_NAME}"
+        return prefs.getString("applied_app_version", defaultVer) ?: defaultVer
     }
 
     fun setAppliedVersion(version: String) {

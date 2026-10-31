@@ -172,7 +172,7 @@ class TontineViewModel @JvmOverloads constructor(
     val ocrState = _ocrState.asStateFlow()
 
     companion object {
-        const val CURRENT_VERSION_STRING = "v1.6.0"
+        val CURRENT_VERSION_STRING: String get() = "v${com.example.BuildConfig.VERSION_NAME}"
     }
 
     private fun isNewerVersion(serverVer: String, currentVer: String): Boolean {
@@ -187,10 +187,10 @@ class TontineViewModel @JvmOverloads constructor(
         return false
     }
 
-    private val _currentAppVersion = MutableStateFlow(CURRENT_VERSION_STRING)
+    private val _currentAppVersion = MutableStateFlow("v${com.example.BuildConfig.VERSION_NAME}")
     val currentAppVersion: StateFlow<String> = _currentAppVersion.asStateFlow()
 
-    private val _latestServerVersion = MutableStateFlow(CURRENT_VERSION_STRING)
+    private val _latestServerVersion = MutableStateFlow("v${com.example.BuildConfig.VERSION_NAME}")
     val latestServerVersion: StateFlow<String> = _latestServerVersion.asStateFlow()
 
     private val _isCheckingUpdate = MutableStateFlow(false)
@@ -259,8 +259,9 @@ class TontineViewModel @JvmOverloads constructor(
         viewModelScope.launch {
             repository.serverAppVersion.collect { serverVer ->
                 _latestServerVersion.value = serverVer
-                val current = CURRENT_VERSION_STRING
+                val current = "v${com.example.BuildConfig.VERSION_NAME}"
                 _currentAppVersion.value = current
+                sessionManager.setAppliedVersion(current)
                 val hasNew = isNewerVersion(serverVer, current)
                 _isUpdateAvailable.value = hasNew
                 if (hasNew) {

@@ -13,6 +13,10 @@
 /captures
 .externalNativeBuild
 .cxx
-local.properties
 .env
 debug.keystore
+
+# Ensure Gradle wrapper executable and jar are committed
+!gradle/wrapper/gradle-wrapper.jar
+!gradlew
+!gradlew.bat

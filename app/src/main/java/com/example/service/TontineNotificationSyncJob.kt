@@ -94,7 +94,7 @@ class TontineNotificationSyncJob : JobService() {
                             if (updateDoc.exists()) {
                                 val latestVer = updateDoc.getString("latestVersion") ?: ""
                                 val currentVer = sessionManager.getAppliedVersion()
-                                if (latestVer.isNotBlank() && latestVer != currentVer) {
+                                if (latestVer.isNotBlank() && isNewerVersion(latestVer, currentVer)) {
                                     val notifKey = "update_job_$latestVer"
                                     if (!sessionManager.isNotificationDispatched(notifKey)) {
                                         sessionManager.markNotificationDispatched(notifKey)
@@ -126,6 +126,18 @@ class TontineNotificationSyncJob : JobService() {
     override fun onStopJob(params: JobParameters?): Boolean {
         jobScope.cancel()
         return true
+    }
+
+    private fun isNewerVersion(serverVer: String, currentVer: String): Boolean {
+        val cleanServer = serverVer.removePrefix("v").split(".").mapNotNull { it.toIntOrNull() }
+        val cleanCurrent = currentVer.removePrefix("v").split(".").mapNotNull { it.toIntOrNull() }
+        for (i in 0 until maxOf(cleanServer.size, cleanCurrent.size)) {
+            val s = cleanServer.getOrElse(i) { 0 }
+            val c = cleanCurrent.getOrElse(i) { 0 }
+            if (s > c) return true
+            if (s < c) return false
+        }
+        return false
     }
 
     companion object {
