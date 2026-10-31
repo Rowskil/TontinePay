@@ -23,10 +23,16 @@ import com.example.ui.theme.AccentTheme
 import com.example.ui.theme.DisplayMode
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
+import java.util.concurrent.TimeUnit
 
 sealed interface OcrScanUiState {
     object Idle : OcrScanUiState
@@ -661,14 +667,73 @@ class TontineViewModel @JvmOverloads constructor(
     fun checkForServerUpdate(onComplete: ((Boolean) -> Unit)? = null) {
         viewModelScope.launch {
             _isCheckingUpdate.value = true
-            delay(600)
             val current = _currentAppVersion.value
-            val serverVer = try {
+            var serverVer = current
+            var downloadUrl = repository.serverDownloadUrl.value
+            var releaseNotes = repository.serverReleaseNotes.value
+
+            // 1. Check cached or latest version in Firestore
+            try {
                 val doc = repository.firestore?.collection("system")?.document("app_update")?.get()?.await()
-                doc?.getString("latestVersion") ?: CURRENT_VERSION_STRING
+                if (doc != null && doc.exists()) {
+                    serverVer = doc.getString("latestVersion") ?: current
+                    downloadUrl = doc.getString("downloadUrl") ?: downloadUrl
+                    releaseNotes = doc.getString("releaseNotes") ?: releaseNotes
+                }
             } catch (e: Exception) {
-                CURRENT_VERSION_STRING
+                Log.w("TontineViewModel", "Could not fetch app_update from Firestore: ${e.message}")
             }
+
+            // 2. Direct upstream check on GitHub Releases API
+            withContext(Dispatchers.IO) {
+                try {
+                    val client = OkHttpClient.Builder()
+                        .connectTimeout(5, TimeUnit.SECONDS)
+                        .readTimeout(8, TimeUnit.SECONDS)
+                        .build()
+                    val req = Request.Builder()
+                        .url("https://api.github.com/repos/Rowskil/TontinePay/releases/latest")
+                        .header("Accept", "application/vnd.github.v3+json")
+                        .header("User-Agent", "TontinePay-Android")
+                        .build()
+                    val resp = client.newCall(req).execute()
+                    if (resp.isSuccessful) {
+                        val bodyStr = resp.body?.string()
+                        if (!bodyStr.isNullOrBlank()) {
+                            val json = JSONObject(bodyStr)
+                            val gitTag = json.optString("tag_name").trim()
+                            val gitBody = json.optString("body").trim()
+                            var gitApkUrl = ""
+                            val assets = json.optJSONArray("assets")
+                            if (assets != null) {
+                                for (i in 0 until assets.length()) {
+                                    val asset = assets.optJSONObject(i)
+                                    val name = asset?.optString("name") ?: ""
+                                    if (name.endsWith(".apk", ignoreCase = true)) {
+                                        gitApkUrl = asset.optString("browser_download_url")
+                                        break
+                                    }
+                                }
+                            }
+                            if (gitApkUrl.isBlank() && gitTag.isNotBlank()) {
+                                gitApkUrl = "https://github.com/Rowskil/TontinePay/releases/download/$gitTag/TontinePay-$gitTag.apk"
+                            }
+
+                            if (gitTag.isNotBlank() && (isNewerVersion(gitTag, current) || isNewerVersion(gitTag, serverVer))) {
+                                serverVer = gitTag
+                                if (gitApkUrl.isNotBlank()) downloadUrl = gitApkUrl
+                                if (gitBody.isNotBlank()) releaseNotes = gitBody
+
+                                // Instruct Firestore in realtime with the new release
+                                repository.syncServerUpdate(gitTag, downloadUrl, releaseNotes)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.w("TontineViewModel", "GitHub API release check skipped: ${e.message}")
+                }
+            }
+
             _latestServerVersion.value = serverVer
             val hasNew = isNewerVersion(serverVer, current)
             _isUpdateAvailable.value = hasNew

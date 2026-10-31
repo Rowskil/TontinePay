@@ -464,6 +464,23 @@ class TontineRepository(
         firestore?.collection("system")?.document("app_update")?.update("downloadUrl", trimmed)
     }
 
+    fun syncServerUpdate(latestVersion: String, downloadUrl: String, releaseNotes: String) {
+        val trimmedUrl = downloadUrl.trim()
+        val trimmedVer = latestVersion.trim()
+        _serverAppVersion.value = trimmedVer
+        if (trimmedUrl.isNotBlank()) _serverDownloadUrl.value = trimmedUrl
+        if (releaseNotes.isNotBlank()) _serverReleaseNotes.value = releaseNotes
+        firestore?.collection("system")?.document("app_update")?.set(
+            hashMapOf(
+                "latestVersion" to trimmedVer,
+                "downloadUrl" to trimmedUrl,
+                "releaseNotes" to releaseNotes,
+                "updatedAt" to System.currentTimeMillis()
+            ),
+            SetOptions.merge()
+        )
+    }
+
     var onNotificationArrived: ((AppNotification) -> Unit)? = null
 
     fun switchUser(userId: String) {

@@ -28,6 +28,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Extract App Version
+        run: |
+          VERSION_NAME=$(grep -E 'versionName\s*=' app/build.gradle.kts | head -n1 | sed -E 's/.*"([^"]+)".*/\1/')
+          VERSION_CODE=$(grep -E 'versionCode\s*=' app/build.gradle.kts | head -n1 | sed -E 's/.*=\s*([0-9]+).*/\1/')
+          if [ -z "$VERSION_NAME" ]; then VERSION_NAME="1.6.0"; fi
+          if [ -z "$VERSION_CODE" ]; then VERSION_CODE="160"; fi
+          echo "APP_VERSION=$VERSION_NAME" >> $GITHUB_ENV
+          echo "APP_TAG=v$VERSION_NAME" >> $GITHUB_ENV
+          echo "APP_CODE=$VERSION_CODE" >> $GITHUB_ENV
+          echo "Detected version: $VERSION_NAME ($VERSION_CODE) -> Release tag: v$VERSION_NAME"
+
       - name: Prepare Keystore and Environment
         run: |
           # 1. Restore debug.keystore if available from base64, otherwise generate with keytool
@@ -60,40 +71,64 @@ jobs:
       - name: Build Debug APK with Gradle
         run: ./gradlew clean assembleDebug --no-daemon --no-build-cache --no-configuration-cache -Djava.awt.headless=true --stacktrace
 
-      - name: Prepare APK Asset
+      - name: Prepare APK and Compute Checksum
         run: |
           mkdir -p release-assets
+          TARGET_APK="release-assets/TontinePay-${{ env.APP_TAG }}.apk"
           if [ -f app/build/outputs/apk/debug/app-debug.apk ]; then
-            cp app/build/outputs/apk/debug/app-debug.apk release-assets/TontinePay-v1.6.0.apk
+            cp app/build/outputs/apk/debug/app-debug.apk "$TARGET_APK"
           else
-            find app/build/outputs/apk -name "*debug*.apk" -exec cp {} release-assets/TontinePay-v1.6.0.apk \;
+            find app/build/outputs/apk -name "*debug*.apk" -exec cp {} "$TARGET_APK" \;
           fi
+          # Compute SHA-256 for data integrity verification
+          sha256sum "$TARGET_APK" | awk '{print $1}' > release-assets/sha256.txt
+          APK_SHA256=$(cat release-assets/sha256.txt)
+          echo "APK_SHA256=$APK_SHA256" >> $GITHUB_ENV
+          echo "Generated APK: $TARGET_APK"
+          echo "SHA-256: $APK_SHA256"
           ls -lh release-assets/
 
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TontinePay-v1.6.0-apk
-          path: release-assets/TontinePay-v1.6.0.apk
+          name: TontinePay-${{ env.APP_TAG }}-apk
+          path: release-assets/
           if-no-files-found: error
 
-      - name: Publish GitHub Release (v1.6.0)
+      - name: Publish GitHub Release
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.6.0
-          name: "TontinePay v1.6.0"
+          tag_name: ${{ env.APP_TAG }}
+          name: "TontinePay ${{ env.APP_TAG }}"
           make_latest: true
           body: |
-            ### 🚀 TontinePay v1.6.0
-            - Nouveau logo officiel transparent et épuré
-            - Mode de tours automatiques configurables
-            - Fréquence quotidienne
-            - Calendrier de date planifiée intégré
-            - Micro-animations tactiles fluides
-            - Téléchargement direct de l'APK
-          files: release-assets/TontinePay-v1.6.0.apk
+            ### 🚀 TontinePay ${{ env.APP_TAG }}
+            - Release officielle compilée et déployée automatiquement par GitHub Actions
+            - Empreinte SHA-256 : `${{ env.APK_SHA256 }}`
+            - Fichier disponible : `TontinePay-${{ env.APP_TAG }}.apk`
+          files: |
+            release-assets/TontinePay-${{ env.APP_TAG }}.apk
+            release-assets/sha256.txt
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync Release to Firestore Realtime Channel
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        run: |
+          echo "Synchronizing release ${{ env.APP_TAG }} to Firestore system/app_update..."
+          TIMESTAMP=$(date +%s%3N)
+          DOWNLOAD_URL="https://github.com/Rowskil/TontinePay/releases/download/${{ env.APP_TAG }}/TontinePay-${{ env.APP_TAG }}.apk"
+          curl -s -X PATCH "https://firestore.googleapis.com/v1/projects/gen-lang-client-0307028175/databases/ai-studio-android-tontinep-a33f464e-ffdf-4a50-ad0b-29089a35f3ff/documents/system/app_update?updateMask.fieldPaths=latestVersion&updateMask.fieldPaths=versionCode&updateMask.fieldPaths=downloadUrl&updateMask.fieldPaths=sha256&updateMask.fieldPaths=updatedAt&key=AIzaSyBeLxke57idgPk7Byhrcd78ffpaPSTu7HY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "fields": {
+                "latestVersion": {"stringValue": "'"${{ env.APP_TAG }}"'"},
+                "versionCode": {"integerValue": "'"${{ env.APP_CODE }}"'"},
+                "downloadUrl": {"stringValue": "'"$DOWNLOAD_URL"'"},
+                "sha256": {"stringValue": "'"${{ env.APK_SHA256 }}"'"},
+                "updatedAt": {"integerValue": "'"$TIMESTAMP"'"}
+              }
+            }' || echo "Firestore sync request finished."
