@@ -30,13 +30,13 @@ class TontineRepository(
     val usersFlow: StateFlow<List<User>> = _users.asStateFlow()
 
     // App Update broadcast
-    private val _serverAppVersion = MutableStateFlow("v1.5.0")
+    private val _serverAppVersion = MutableStateFlow("v1.6.0")
     val serverAppVersion: StateFlow<String> = _serverAppVersion.asStateFlow()
 
-    private val _serverDownloadUrl = MutableStateFlow("https://ais-pre-3k5lkqv7ovqerb6mqswtsl-961012230089.europe-west2.run.app")
+    private val _serverDownloadUrl = MutableStateFlow("https://github.com/Rowskil/TontinePay/releases/latest/download/TontinePay-v1.6.0.apk")
     val serverDownloadUrl: StateFlow<String> = _serverDownloadUrl.asStateFlow()
 
-    private val _serverReleaseNotes = MutableStateFlow("Version 1.5.0 : Gestion avancée des cycles, ordre de passage par glissement fluide, parts multiples et contrôles anti-fraude.")
+    private val _serverReleaseNotes = MutableStateFlow("Version 1.6.0 : Nouveau logo officiel TP épuré, mode tours automatiques, fréquence quotidienne, calendrier interactif, micro-animations tactiles.")
     val serverReleaseNotes: StateFlow<String> = _serverReleaseNotes.asStateFlow()
 
     // Current logged in user (null on clean first launch until onboarding account creation)

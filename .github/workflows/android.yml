@@ -23,13 +23,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
 
       - name: Prepare Keystore and Environment
         run: |
@@ -48,7 +45,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Debug APK with Gradle
-        run: ./gradlew assembleDebug --no-daemon -Djava.awt.headless=true --stacktrace
+        run: ./gradlew clean assembleDebug --no-daemon --no-build-cache --no-configuration-cache -Djava.awt.headless=true --stacktrace
 
       - name: Prepare APK Asset
         run: |
@@ -68,6 +65,7 @@ jobs:
         with:
           tag_name: v1.6.0
           name: "TontinePay v1.6.0"
+          make_latest: true
           body: |
             ### 🚀 TontinePay v1.6.0
             - Nouveau logo officiel transparent et épuré
